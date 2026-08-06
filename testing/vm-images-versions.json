@@ -1,0 +1,32 @@
+{
+  "$schema": "schema/output.schema.json",
+  "osFilter": "win11-25h2",
+  "galleries": [
+    {
+      "name": "tcs_prod_ext_rad_cll_core_compute_gallery",
+      "subscription": "bde07918-0447-48ae-8b33-7dac09045dac",
+      "resourceGroup": "tcs-prod-ext-rad-cll-core-rg",
+      "definitions": [
+        {
+          "description": "The basic Windows 11 25H2 image",
+          "architecture": "x64",
+          "location": "centralus",
+          "name": "tcs-prod-ext-rad-cll-core-base-edp-win11-25h2",
+          "osType": "Windows",
+          "identifier": {
+            "offer": "tcs-prod-ext-rad-cll-core-base-edp-win11-25h2",
+            "publisher": "tas",
+            "sku": "tcs-prod-ext-rad-cll-core-base-edp-win11-25h2"
+          },
+          "versions": [
+            {
+              "name": "0.0.9",
+              "location": "centralus",
+              "sizeInGB": 128
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

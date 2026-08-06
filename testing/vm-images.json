@@ -1,0 +1,11 @@
+{
+  "$schema": "schema/input.schema.json",
+  "osFilter": "win11-25h2",
+  "galleries": [
+    {
+      "name": "tcs_prod_ext_rad_cll_core_compute_gallery",
+      "subscription": "bde07918-0447-48ae-8b33-7dac09045dac",
+      "resourceGroup": "tcs-prod-ext-rad-cll-core-rg"
+    }
+  ]
+}
