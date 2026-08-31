@@ -8,12 +8,13 @@ source "azure-arm" "packer-test" {
 
   # Authentication: uses the locally authenticated Azure CLI session
   use_azure_cli_auth = true
-  subscription_id = var.subscription_id
+  subscription_id    = var.subscription_id
 
   # Override networking configuration to avoid creation of temporary resources
-  virtual_network_name                = var.virtual_network_name
-  virtual_network_subnet_name         = var.virtual_network_subnet_name
-  virtual_network_resource_group_name = var.virtual_network_resource_group_name
+  virtual_network_name                   = var.virtual_network_name
+  virtual_network_subnet_name            = var.virtual_network_subnet_name
+  virtual_network_resource_group_name    = var.virtual_network_resource_group_name
+  private_virtual_network_with_public_ip = false
 
 
   # ── Destination ──────────────────────────────────────────────────────────
@@ -59,8 +60,8 @@ source "azure-arm" "packer-test" {
   winrm_insecure = true
   winrm_username = "packer"
   winrm_password = var.winrm_password
-  winrm_timeout  = "15m"
-  keep_os_disk = true
+  winrm_timeout  = "10m"
+  keep_os_disk   = false
 
   # ── VM Size & Location ──────────────────────────────────────────────────
   vm_size            = var.vm_size
@@ -76,31 +77,59 @@ source "azure-arm" "packer-test" {
 build {
   sources = ["source.azure-arm.packer-test"]
 
-  # # 1. Clear any pending reboots left by Azure VM initialization
-  # provisioner "windows-restart" {
-  #   restart_check_command = "powershell -command \"& {Write-Output 'rebooted'}\""
-  #   restart_timeout       = "15m"
-  # }
-
-  # # 2. Copy Windows update script
-  # provisioner "file" {
-  #   source      = "scripts/windows_update.ps1"
-  #   destination = "c:\\temp\\build\\scripts\\windows_update.ps1"
-  # }
-
-  # provisioner "powershell" {
-  #   script = "scripts/ws-update.ps1"
-  # }
-
-  # 2. Run updates with essential filters and batch limits
-  provisioner "windows-update" {
+  provisioner "file" {
+    source      = "scripts/1.create-windows-task.ps1"
+    destination = "c:\\Windows\\Temp\\create-windows-task.ps1"
   }
 
-  # # 3. Final reboot after updates are installed
-  # provisioner "windows-restart" {
-  #   restart_check_command = "powershell -command \"& {Write-Output 'rebooted'}\""
-  #   restart_timeout       = "15m"
-  # }
+  provisioner "file" {
+    source      = "scripts/2.windows-update-task.ps1"
+    destination = "c:\\Windows\\Temp\\windows-update-task.ps1"
+  }
+
+  provisioner "powershell" {
+    elevated_user     = "SYSTEM"
+    elevated_password = ""
+    name              = "Windows Update"
+    inline = [
+      "Write-Output 'Phase 1/3'",
+      "powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'C:\\Windows\\Temp\\create-windows-task.ps1'"
+    ]
+  }
+
+  provisioner "windows-restart" {
+    restart_check_command = "powershell -command \"& {Write-Output 'rebooted'}\""
+    restart_timeout       = "15m"
+  }
+
+  provisioner "powershell" {
+    elevated_user     = "SYSTEM"
+    elevated_password = ""
+    name              = "Windows Update"
+    inline = [
+      "Write-Output 'Phase 2/3'",
+      "powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'C:\\Windows\\Temp\\create-windows-task.ps1'"
+    ]
+  }
+
+  provisioner "windows-restart" {
+    restart_check_command = "powershell -command \"& {Write-Output 'rebooted'}\""
+    restart_timeout       = "15m"
+  }
+  provisioner "powershell" {
+    elevated_user     = "SYSTEM"
+    elevated_password = ""
+    name              = "Windows Update"
+    inline = [
+      "Write-Output 'Phase 3/3'",
+      "powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'C:\\Windows\\Temp\\create-windows-task.ps1'"
+    ]
+  }
+
+  provisioner "windows-restart" {
+    restart_check_command = "powershell -command \"& {Write-Output 'rebooted'}\""
+    restart_timeout       = "15m"
+  }
 
   provisioner "powershell" {
     inline = [

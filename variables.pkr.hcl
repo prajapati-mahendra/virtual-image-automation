@@ -55,6 +55,7 @@ variable "exclude_from_latest" {
 
 variable "winrm_password" {
   type = string
+  default = env("WINRM_PASSWORD")
 }
 
 variable "license_type" {

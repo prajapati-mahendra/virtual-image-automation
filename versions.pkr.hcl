@@ -8,9 +8,5 @@ packer {
       source  = "github.com/hashicorp/azure"
       version = ">= 2.3.0"
     }
-    windows-update = {
-      version = "0.18.4"
-      source  = "github.com/rgl/windows-update"
-    }
   }
 }
